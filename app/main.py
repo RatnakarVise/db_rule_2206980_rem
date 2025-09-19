@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import List, Optional, Tuple, Dict, Any
 import re
 import json
+from datetime import datetime
 
 app = FastAPI(
     title="MM-IM Remediator (S4HANA Material Document & Stock Tables)"
@@ -199,6 +200,9 @@ def remediate_code(txt: str) -> Tuple[str, List[dict]]:
     last_idx = 0
     remediated_parts = []
 
+    today = datetime.today().strftime("%Y-%m-%d")
+    change_marker = f'\n" Changed by PwC on {today}\n'
+
     for m in matches:
         name = m.group("name").upper()
         info = TABLE_MAP.get(name)
@@ -221,6 +225,7 @@ def remediate_code(txt: str) -> Tuple[str, List[dict]]:
         replacement = info["new"]
         remediated_parts.append(txt[last_idx:m.start()])
         remediated_parts.append(replacement)
+        remediated_parts.append(change_marker)  # add PwC comment
         last_idx = m.end()
 
         # Track issue
@@ -236,7 +241,7 @@ def remediate_code(txt: str) -> Tuple[str, List[dict]]:
     # Add trailing text
     remediated_parts.append(txt[last_idx:])
     new_txt = "".join(remediated_parts)
-    new_txt = add_order_by_to_selects(new_txt)
+    # new_txt = add_order_by_to_selects(new_txt)
     return new_txt, issues
 
 # -----------------------------
