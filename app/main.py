@@ -111,7 +111,7 @@ class Unit(BaseModel):
     class_implementation: Optional[str] = None
     # start_line: Optional[int] = None
     # end_line: Optional[int] = None
-    original_code: Optional[str] = ""
+    code: Optional[str] = ""
 
 # -----------------------------
 # Helpers
@@ -248,20 +248,32 @@ def remediate_code(txt: str) -> Tuple[str, List[dict]]:
 # API
 # -----------------------------
 
+# @app.post("/remediate-mm-im")
+# async def remediate_mm_im(units: List[Unit]):
+#     """
+#     Input: list of ABAP 'units' with code.
+#     Output: same structure with appended 'mb_txn_usage' list of remediation suggestions.
+#     """
+#     results = []
+#     for u in units:
+#         src = u.code or ""
+#         # issues = find_mm_im_issues(src)
+#         remediated_src, issues = remediate_code(src)
+
+#         obj = json.loads(u.model_dump_json())
+#         # obj["mb_txn_usage"] = issues
+#         obj["remediated_code"] = remediated_src
+#         results.append(obj)
+#     return results
 @app.post("/remediate-mm-im")
-async def remediate_mm_im(units: List[Unit]):
-    """
-    Input: list of ABAP 'units' with code.
-    Output: same structure with appended 'mb_txn_usage' list of remediation suggestions.
-    """
-    results = []
-    for u in units:
-        src = u.original_code or ""
-        # issues = find_mm_im_issues(src)
+async def remediate_mm_im(unit: Unit):
+        """
+        Input: one ABAP unit with code.
+        Output: single object with remediation.
+        """
+        src = unit.code or ""
         remediated_src, issues = remediate_code(src)
 
-        obj = json.loads(u.model_dump_json())
-        # obj["mb_txn_usage"] = issues
+        obj = json.loads(unit.model_dump_json())
         obj["remediated_code"] = remediated_src
-        results.append(obj)
-    return results
+        return obj    
