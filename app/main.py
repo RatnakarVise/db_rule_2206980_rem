@@ -109,9 +109,9 @@ class Unit(BaseModel):
     type: str
     name: Optional[str] = None
     class_implementation: Optional[str] = None
-    start_line: Optional[int] = None
-    end_line: Optional[int] = None
-    code: Optional[str] = ""
+    # start_line: Optional[int] = None
+    # end_line: Optional[int] = None
+    original_code: Optional[str] = ""
 
 # -----------------------------
 # Helpers
@@ -135,8 +135,8 @@ def _add_hit(
         "table": target_name,
         "target_type": "Table",
         "target_name": target_name,
-        "start_char_in_unit": span[0] if span else None,
-        "end_char_in_unit": span[1] if span else None,
+        # "start_char_in_unit": span[0] if span else None,
+        # "end_char_in_unit": span[1] if span else None,
         "used_fields": [],
         "ambiguous": False,
         "suggested_statement": suggested_statement,
@@ -256,12 +256,12 @@ async def remediate_mm_im(units: List[Unit]):
     """
     results = []
     for u in units:
-        src = u.code or ""
+        src = u.original_code or ""
         # issues = find_mm_im_issues(src)
         remediated_src, issues = remediate_code(src)
 
         obj = json.loads(u.model_dump_json())
         # obj["mb_txn_usage"] = issues
-        obj["rem_code"] = remediated_src
+        obj["remediated_code"] = remediated_src
         results.append(obj)
     return results
